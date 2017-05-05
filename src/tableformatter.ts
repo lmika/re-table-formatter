@@ -96,7 +96,7 @@ export class Table {
         return new Table(str.split(/\n/)
             .map(s => s.trim())
             .filter(s => s.length != 0)
-            .map(rowStr => rowStr.split(/\t/)
+            .map(rowStr => rowStr.split(/\t|\s{3,}/)
                 .map(cellStr => cellStr.trim()))
             .map(cellStrs => new Row(cellStrs)));
     }

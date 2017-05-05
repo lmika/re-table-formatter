@@ -54,4 +54,14 @@ Hello  World
 Of     Tables
 =====  ======`.trim());
     })
+
+    test("Test table parse with multi-spaces", () => {
+        let table = tf.Table.parse("Hello   World   \nOf   Tables")
+        assert.equal(table.format(), `
+=====  ======
+Hello  World
+=====  ======
+Of     Tables
+=====  ======`.trim());
+    })
 });
