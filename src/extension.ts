@@ -24,7 +24,13 @@ export function activate(context: vscode.ExtensionContext) {
 
         let selection = editor.selection;
         let text = editor.document.getText(selection);
-        let table = tableformatter.Table.parse(text);
+
+        let table;
+        try {
+            table = tableformatter.Table.parse(text).wrapCells(40);
+        } catch (e) {
+            console.log(e);
+        }
 
         editor.edit(editBuilder => {
             editBuilder.delete(selection);

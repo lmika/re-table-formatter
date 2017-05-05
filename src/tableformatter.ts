@@ -6,6 +6,33 @@ export class Row {
     }
 
     /**
+     * Split the row and wrap the text within it so that no column is longer
+     * than the maximum width.
+     * 
+     * @param maxWidth  Maximum column width
+     */
+    public wrapCells(maxWidth: number): Row[] {
+        var splitCells: string[][] = this.cells.map(cell => this.wrap(cell, maxWidth));
+        var rowsNeeded = splitCells.reduce((acc, cells) => Math.max(acc, cells.length), 0);
+
+        var newRows: Row[] = [];
+
+        for (var row = 0; row < rowsNeeded; row++) {
+            var newCells: string[] = [];
+            for (var col = 0; col < this.cells.length; col++) {
+                if (row < splitCells[col].length) {
+                    newCells.push(splitCells[col][row]);
+                } else {
+                    newCells.push("");
+                }
+            }
+            newRows.push(new Row(newCells));
+        }
+
+        return newRows;
+    }
+
+    /**
      * Format the specific row based on the column widths and separator.
      * 
      * @param colWidths     The column widths
@@ -28,6 +55,30 @@ export class Row {
 
         return s;
     }
+
+    /**
+     * Wraps a string.
+     * 
+     * @param s 
+     * @param maxWidth 
+     */
+    private wrap(s: string, maxWidth: number): string[] {
+        var lines: string[] = [];
+        var currLine = "";
+
+        for (var token of s.trim().split(/\s+/)) {
+            if (currLine.length + 1 + token.length > maxWidth) {
+                // Line will be too long.
+                lines.push(currLine.trim());
+                currLine = token + " ";
+            } else {
+                currLine += token + " ";
+            }
+        }
+
+        lines.push(currLine);
+        return lines;
+    }
 }
 
 export class Table {
@@ -44,9 +95,27 @@ export class Table {
     static parse(str: string): Table {
         return new Table(str.split(/\n/)
             .map(s => s.trim())
+            .filter(s => s.length != 0)
             .map(rowStr => rowStr.split(/\t/)
                 .map(cellStr => cellStr.trim()))
             .map(cellStrs => new Row(cellStrs)));
+    }
+
+    /**
+     * Wraps the cells of the table.
+     * @param maxWidth 
+     */
+    wrapCells(maxWidth: number) {
+        var newRows: Row[] = [];
+        for (var row of this.rows) {
+            // TODO: HACK
+            for (var newRow of row.wrapCells(maxWidth)) {
+                newRows = newRows.concat(newRow);
+            }
+        }
+
+        this.rows = newRows;
+        return this;
     }
 
     /**
@@ -61,11 +130,11 @@ export class Table {
         for (var row of this.rows) {
             if (isHeader) {
                 s += this.formatRule(colWidths, "  ") + "\n";
-                s += row.formatRow(colWidths, "  ").trim() + "\n";
+                s += row.formatRow(colWidths, "  ").replace(/\s+$/, "") + "\n";
                 s += this.formatRule(colWidths, "  ") + "\n";
                 isHeader = false;
             } else {
-                s += row.formatRow(colWidths, "  ").trim() + "\n";
+                s += row.formatRow(colWidths, "  ").replace(/\s+$/, "") + "\n";
             }
         }
 
