@@ -27,7 +27,7 @@ export function activate(context: vscode.ExtensionContext) {
 
         let table;
         try {
-            table = tableformatter.Table.parse(text).wrapCells(40);
+            table = tableformatter.Table.parse(text).wrapCells(50);
         } catch (e) {
             console.log(e);
         }
